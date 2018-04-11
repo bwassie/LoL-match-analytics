@@ -17,7 +17,6 @@ class HTMLTableParser:
         n_columns = 0
         n_rows=0
         column_names = []
-
         # Find number of rows and columns
         # we also find the column titles if we can
         for row in table.find_all('tr'):
@@ -52,33 +51,34 @@ class HTMLTableParser:
                 column_marker += 1
             if len(columns) > 0:
                 row_marker += 1
-
         # Convert to float if possible
         for col in df:
             try:
                 df[col] = df[col].astype(float)
             except ValueError:
                 pass
-
         return df
 
-def scrape_data(url,pattern, sql_name="test.db"):
-    try:
-        conn = sqlite3.connect(sql_name)
-        cursor=conn.cursor()
-        print("Created database {}".format(sql_name))
-    except:
-        print("Database {} exists, moving on".format(sql_name))
-    r = requests.get(url)
-    soup = BeautifulSoup(r.text,"lxml")
-    for link in soup.find_all("a"):
-        link_str = link.get("href")
-        if link_str != None and pattern in link_str:
-            name = link_str.split("/")[-2]
-            hp = HTMLTableParser()
-            table = hp.parse_url(link_str)[0][1]
-            try:
-                table.to_sql(name,con=conn,if_exists='fail')
-                print("Inserting table {} in databse {}".format(name,sql_name))
-            except ValueError:
-                print("Table {} exists, moving on".format(name))
+    def scrape_data(self,url,pattern, sql_name="test.db"):
+        n=0
+        try:
+            conn = sqlite3.connect(sql_name)
+            cursor=conn.cursor()
+            print("Creating database {} and inserting tables...".format(sql_name))
+        except:
+            print("Database {} exists, moving on".format(sql_name))
+        r = requests.get(url)
+        soup = BeautifulSoup(r.text,"lxml")
+        for link in soup.find_all("a"):
+            link_str = link.get("href")
+            if link_str != None and pattern in link_str:
+                name = link_str.split("/")[-2]
+                try:
+                    n+=1
+                    table = self.parse_url(link_str)[0][1]
+                    table.to_sql(name,con=conn,if_exists='fail')
+                    #print("Inserting table {} in databse {}".format(name,sql_name))
+                except:
+                    s=1
+                    #print("Table {} exists, moving on".format(name))
+        print("Inserted {} tables into {}".format(n,sql_name))
