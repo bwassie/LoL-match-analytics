@@ -1,6 +1,19 @@
-<p align="center">
 # League of Legends match analytics
 ![LoL logo](https://upload.wikimedia.org/wikipedia/en/7/77/League_of_Legends_logo.png)  
-</p>
-This is a small project I'm working on to improve my data scraping and SQL skills. The question I'm trying to answer in the context of professional League of Legends matches is: what are the differences between the regions? In particular, what separates the LCK (Korea) from NA (North America). This is currently a work in progress but I plan to update it weekly, if nore more frequently.   
+This is a small analytics projects about one of my favorite eSports: League of Legends (LoL). The question I'm trying to answer in the context of professional League of Legends matches is: what are the differences between regions? In particular, what separates the LCK (Korea) from NA (North America). This is currently a work in progress but I plan to update it weekly, if nore more frequently.   
 `webscrape_tables.ipynb` covers the data scraping portion while `2017_NA_vs_LCK_analysis.ipynb` covers some of the analysis. The folder `utils` contains the utilities I used to make some of the SQL querying and data processing easier. 
+
+## Overview of League of Legends  
+I have taken the following overview from [wikipedia](https://en.wikipedia.org/wiki/League_of_Legends):  
+>In League of Legends, players assume the role of an unseen "summoner" that controls a "champion" with unique abilities and battle against a team of other players or computer-controlled champions. The goal is usually to destroy the opposing team's "nexus", a structure which lies at the heart of a base protected by defensive structures, although other distinct game modes exist as well. Each League of Legends match is discrete, with all champions starting off fairly weak but increasing in strength by accumulating items and experience over the course of the game.  
+
+![pic](https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Map_of_MOBA.svg/600px-Map_of_MOBA.svg.png)  
+>Summoner's Rift is the most popular map in League of Legends. On this map type, two teams of five players compete to destroy an enemy building called a Nexus, which is guarded by the enemy team and a number of defensive structures called turrets, or towers. One nexus is located in each enemy base on opposite sides of the map, in the lower-left and upper-right hand corners. These structures continually create weak non-player characters known as minions, which advance toward the enemy base along three paths: top, middle, and bottom lanes. Players compete to advance these waves of minions into the enemy base, which allows them to destroy enemy structures and ultimately win the match. Between lanes are neutral areas of the map known as the 'jungle', arrayed in four quadrants. A shallow river divides the map between the teams, but doesn't actually impede movement; all champions can wade through it no differently than dry land.
+
+>Each team wishes to defend their own structures and destroy the other team's structures. These include:
+
+    >- Turrets - Each lane is guarded by powerful defensive structures called turrets. Turrets deal exceptionally high damage and will attack enemy minions and players that approach them. Turrets prioritize enemy minions in their vicinity, but will immediately attack enemy players if they attack allied players. Thus, by advancing an allied minion wave into the range of a turret, a player can do damage to the structure without themselves being attacked. When destroyed, turrets provide gold and experience. Turrets that are destroyed are destroyed permanently for that match and will not respawn. Some turrets, depending on location, will regenerate health over time if they are damaged but not destroyed.  
+    >- Inhibitor - Each lane contains one Inhibitor. A lane's Inhibitor can be attacked after a team has destroyed the three turrets guarding its lane. Destroying an Inhibitor will cause the allied Nexus to spawn Super Minions, more powerful Minions that provide a buff to surrounding Minions. If destroyed, inhibitors will respawn after five minutes.  
+	>- Nexus - Each team has a Nexus that can only be damaged once all the turrets in a lane and that lane's inhibitor is destroyed. Destruction of the enemy's team Nexus ends the game.  
+
+It is also important to note that killing minions and destroying the structures above grant gold, which can be used by players to buy items, and experience, which allows players to improve their abilities.
