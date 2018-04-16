@@ -40,17 +40,27 @@ def format_table(match_table,to_drop=["patchno","gameid","url","index"]):
     cols = match_table.loc[:,(match_table.isnull().sum()>0)].columns.values
     #print("Following columns have null values:\n")
     #print(match_table[cols].isnull().sum())
-    match_table["herald"] = match_table["herald"].fillna(0)
-    match_table["heraldtime"] = match_table["heraldtime"].fillna(60)
-    data = match_table.copy().drop(to_drop,axis=1)
-    data["visionwards"] = pd.to_numeric(data["visionwards"],errors='coerce')
-    pre_data = data.apply(pd.to_numeric,errors='ignore')
+    try:
+        match_table["herald"] = match_table["herald"].fillna(0)
+        match_table["heraldtime"] = match_table["heraldtime"].fillna(60)
+    except:
+        pass
+    data = match_table.copy().drop(to_drop,axis=1,errors="ignore")
+    try:
+        data["visionwards"] = pd.to_numeric(data["visionwards"],errors='coerce')
+    except:
+        pass
+    pre_data = data.apply(pd.to_numeric,errors='ignore').replace([np.inf, -np.inf], np.nan)
     data = DataFrameImputer().fit_transform(pre_data)
     catcols = [data.dtypes.index[ii] for ii in range(data.dtypes.shape[0]) if data.dtypes[ii]=='O']
     numcols = [data.dtypes.index[ii] for ii in range(data.dtypes.shape[0]) if data.dtypes[ii]!='O']
-    cat_data = pd.get_dummies(data[catcols])
-    pre_data[cat_data.columns.values] = cat_data
-    return pre_data,pd.concat([cat_data,data[numcols]],axis=1)
+    try:
+        cat_data = pd.get_dummies(data[catcols])
+        pre_data[cat_data.columns.values] = cat_data
+        output = pd.concat([cat_data,data[numcols]],axis=1)
+    except:
+        output = data
+    return pre_data, output
 
 def get_final_table(leagues,variable,to_drop, all_matches):
     matches = []
@@ -61,6 +71,7 @@ def get_final_table(leagues,variable,to_drop, all_matches):
     data = pd.concat(matches,axis=0)
     y = pd.concat(y,axis=0)
     pre_data,data = format_table(data,to_drop)
+    #y = y[data.index.values]
     colnames = data.columns.values
     data = StandardScaler().fit_transform(data)
     return pre_data,data, y.values, colnames
@@ -117,20 +128,21 @@ class supervised_analysis():
         #print("\n")
         return ordered
 
-def makeplot(data,y,ftr,kind):
+def makeplot(data,y,ftr,kind, axes):
     target_names = pd.unique(y)
+    data = data.replace([np.inf, -np.inf], np.nan)
     group = []
     for ii in target_names:
         group.append(data.iloc[y==ii,:])
     #print(len(group))
-    fig,ax = plt.subplots(1,2,figsize=(10,4),sharey=True)
-    axes = ax.flatten()
+    #fig,ax = plt.subplots(1,2,figsize=(10,4),sharey=True)
+    #axes = ax.flatten()
     font1 = {'fontsize': 11}
     font2 = {'fontsize': 13}
     if kind == "bar":
         n = 0
         for ii in group:
-            ii[ftr].value_counts().plot.bar(ax=axes[n])
+            ii[ftr].dropna().value_counts().plot.bar(ax=axes[n])
             axes[n].set_xticklabels(["0","1"])
             axes[n].set_title(target_names[n],fontdict=font1)
             n+=1
@@ -139,10 +151,12 @@ def makeplot(data,y,ftr,kind):
     else:
         n = 0
         for ii in group:
-            ii.boxplot(ftr,ax = axes[n])
+            ii.dropna(axis=0,subset=[ftr],how="any").boxplot(ftr,ax = axes[n])
             axes[n].set_title("{}\n mean: {:10.3f}".format(target_names[n],ii[ftr].mean()),fontdict=font1)
             n+=1
         t,p2 = ttest_ind(group[0][ftr],group[1][ftr],equal_var=False)
-        plt.suptitle("{} for {} vs {}\nT-test p-val: {:10.3f}".format(
-            ftr,target_names[0],target_names[1],p2),fontdict=font2)
-        plt.show()
+        print("T-test on {} for {} vs {} p-val: {:10.3f}".format(
+            ftr,target_names[0],target_names[1],p2))
+        #plt.suptitle("{} for {} vs {}\nT-test p-val: {:10.3f}".format(
+            #ftr,target_names[0],target_names[1],p2),fontdict=font2)
+        #plt.show()
