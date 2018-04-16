@@ -55,6 +55,7 @@ class parse_databases():
         teams = list(set(teams))
         df2 = pd.DataFrame({"Team":teams})
         df2.to_sql(name,match)
+        return df2
 
     def get_matches_from_table(self, db,name,year='2017',league="",player="team"):
         match = db
@@ -82,6 +83,6 @@ class parse_databases():
     def parse_tables_get_matches(self,directory,alias,joins,anti_joins,name,year,league):
         match,aliases = self.get_dbs(directory)
         tables = self.get_tables(match,alias,joins,anti_joins)
-        self.create_table(match,name,alias, tables)
+        teams = self.create_table(match,name,alias, tables)
         matches = self.get_matches_from_table(match,name,year,league,joins[1])
-        return matches
+        return matches, teams
