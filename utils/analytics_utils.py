@@ -51,7 +51,8 @@ def format_table(match_table,to_drop=["patchno","gameid","url","index"]):
     except:
         pass
     pre_data = data.apply(pd.to_numeric,errors='ignore').replace([np.inf, -np.inf], np.nan)
-    data = DataFrameImputer().fit_transform(pre_data)
+    pre_data = DataFrameImputer().fit_transform(pre_data)
+    data = pre_data.copy()
     catcols = [data.dtypes.index[ii] for ii in range(data.dtypes.shape[0]) if data.dtypes[ii]=='O']
     numcols = [data.dtypes.index[ii] for ii in range(data.dtypes.shape[0]) if data.dtypes[ii]!='O']
     try:
@@ -91,12 +92,12 @@ class supervised_analysis():
         clsf = self.methods[alg]
         scores = cross_val_score(clsf,self.X_train,self.y_train,cv=
                                  StratifiedKFold(10,shuffle=True,random_state=292))
-        print("\n{} Cross val mean: {} std: {}".format(alg,scores.mean(),scores.std()))
+        print("\n{} Cross val mean: {:10.4f}\tstd: {:10.4f}".format(alg,scores.mean(),scores.std()))
         clsf.fit(self.X_train,self.y_train)
-        print("{} test score: {}".format(alg,clsf.score(self.X_test,self.y_test)))
+        #print("{} test score: {:10.4f}".format(alg,clsf.score(self.X_test,self.y_test)))
         y_pred = label_binarize(clsf.predict(self.X_test),np.unique(self.y_test))
         auc = roc_auc_score(label_binarize(self.y_test,np.unique(self.y_test)),y_pred,average='weighted')
-        print("{} AUC on test data: {}".format(alg,auc))
+        print("{} AUC on test data: {:10.4f}".format(alg,auc))
         try:
             coef = clsf.coef_[0]
             comp = self.contributions(coef)
