@@ -26,10 +26,10 @@ class parse_databases():
         anti_join_str = ""
         if len(joins) > 0:
             for ii in joins:
-                join_str+="""AND name LIKE '%{}%'""".format(ii)
+                join_str+=""" AND name LIKE '%{}%' """.format(ii)
         if len(anti_joins) > 0:
             for ii in anti_joins:
-                anti_join_str+="""AND name NOT LIKE '%{}%'""".format(ii)
+                anti_join_str+=""" AND name NOT LIKE '%{}%' """.format(ii)
         #print("\nExecuting SQL query:")
         query="""SELECT name FROM {}.'sqlite_master' WHERE type = "table" {} {};""".format(alias,join_str,anti_join_str)
         #print(query)
@@ -55,9 +55,10 @@ class parse_databases():
         teams = list(set(teams))
         df2 = pd.DataFrame({"Team":teams})
         df2.to_sql(name,match)
+        #print(tables)
         return df2
 
-    def get_matches_from_table(self, db,name,year='2017',league="",player="team"):
+    def get_matches_from_table(self, db,name,year,league="",player="team"):
         match = db
         match_cur = match.cursor()
         query="""SELECT name FROM 'sqlite_master' WHERE type = "table" AND name LIKE "%match%" AND 
@@ -67,7 +68,7 @@ class parse_databases():
         league_str=""
         if league !="":
             league_str = """AND 'matches'.league LIKE '%{}%' """.format(league) 
-        #print(tables)
+        #print(table)
         if player == "team":
             query = """SELECT * FROM '{}' AS 'matches' INNER JOIN '{}' AS 
                 'table' ON 'table'.Team = 'matches'.team WHERE 'matches'.player LIKE 
@@ -81,6 +82,7 @@ class parse_databases():
         return matches
 
     def parse_tables_get_matches(self,directory,alias,joins,anti_joins,name,year,league):
+        #print(name)
         match,aliases = self.get_dbs(directory)
         tables = self.get_tables(match,alias,joins,anti_joins)
         teams = self.create_table(match,name,alias, tables)

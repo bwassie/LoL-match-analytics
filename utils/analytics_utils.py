@@ -20,7 +20,7 @@ from scipy.stats import ks_2samp
 import matplotlib
 import matplotlib.pyplot as plt
 plt.style.use("ggplot")
-
+from sklearn.decomposition import PCA
 class DataFrameImputer(TransformerMixin):
     def __init__(self):
         """Impute missing values.
@@ -41,13 +41,17 @@ def format_table(match_table,to_drop=["patchno","gameid","url","index"]):
     #print("Following columns have null values:\n")
     #print(match_table[cols].isnull().sum())
     try:
-        match_table["herald"] = match_table["herald"].fillna(0)
-        match_table["heraldtime"] = match_table["heraldtime"].fillna(60)
+        data["invisiblewardclearrate"] = pd.to_numeric(data["invisiblewardclearrate"],errors='coerce')#match_table["herald"] = match_table["herald"].fillna(0)
+        data["visiblewardclearrate"] = pd.to_numeric(data["visiblewardclearrate"],errors='coerce')#match_table["heraldtime"] = match_table["heraldtime"].fillna(60)
     except:
         pass
     data = match_table.copy().drop(to_drop,axis=1,errors="ignore")
     try:
         data["visionwards"] = pd.to_numeric(data["visionwards"],errors='coerce')
+    except:
+        pass
+    try:
+        data["fbtime"] = pd.to_numeric(data["fbtime"],errors='coerce')
     except:
         pass
     pre_data = data.apply(pd.to_numeric,errors='ignore').replace([np.inf, -np.inf], np.nan)
@@ -82,7 +86,7 @@ class supervised_analysis():
         self.data = data
         self.y = y
         self.cols = cols
-        print("Largest class/Naive accuracy: {:10.4f}".format(max(np.unique(y,return_counts=True)[1])/(y.shape[0])))
+        #print("Largest class/Naive accuracy: {:10.4f}".format(max(np.unique(y,return_counts=True)[1])/(y.shape[0])))
         self.y_ml = LabelEncoder().fit_transform(y)
         self.X_train,self.X_test,self.y_train,self.y_test = train_test_split(self.data,self.y_ml,test_size=.4,
                                         stratify=self.y_ml, shuffle=True,random_state=392)
@@ -96,15 +100,15 @@ class supervised_analysis():
         clsf.fit(self.X_train,self.y_train)
         #print("{} test score: {:10.4f}".format(alg,clsf.score(self.X_test,self.y_test)))
         y_pred = label_binarize(clsf.predict(self.X_test),np.unique(self.y_test))
-        auc = roc_auc_score(label_binarize(self.y_test,np.unique(self.y_test)),y_pred,average='weighted')
-        print("{} AUC on test data: {:10.4f}".format(alg,auc))
+        auc = clsf.score(self.X_test,self.y_test)#roc_auc_score(label_binarize(self.y_test,np.unique(self.y_test)),y_pred,average='samples')
+        #print("{} AUC on test data: {:10.4f}".format(alg,auc))
         try:
             coef = clsf.coef_[0]
             comp = self.contributions(coef)
         except:
             coef = clsf.feature_importances_
             comp = self.contributions(coef)
-        return comp
+        return comp, auc
     
     def anova(self):
         F,pval = f_classif(self.data,self.y)
@@ -128,6 +132,35 @@ class supervised_analysis():
         #print((ordered.head(10)))
         #print("\n")
         return ordered
+    def unsupervised_analysis(data,y,colnames):
+        pca = PCA()
+        pca_transform = pca.fit(data).transform(data)
+        good_data = pd.DataFrame(data,columns=colnames)
+        dimensions = ['Dimension {}'.format(i) for i in range(1,len(pca.components_)+1)]
+        components = pd.DataFrame(np.round(pca.components_, 4), columns = good_data.keys())
+        components.index = dimensions
+        ratios = pca.explained_variance_ratio_.reshape(len(pca.components_), 1)
+        variance_ratios = pd.DataFrame(np.round(ratios, 4), columns = ['Explained Variance'])
+        variance_ratios.index = dimensions
+        df = pd.concat([variance_ratios, components],axis=1)
+        print("\nContributions to PCA component 1:")
+        df2 = df[df.iloc[0,:].abs().sort_values(ascending=False).index]
+        display(df2.head())
+        #display(df.iloc[1,:].abs().sort_values(ascending=False).head())
+        target_names = pd.unique(y)
+        plt.figure()
+        all_colors = ['blue', 'red','green','brown','yellow','cyan','black']
+        colors = all_colors[:target_names.shape[0]]
+        lw = 2
+
+        for color, i in zip(colors, target_names):
+            plt.scatter(pca_transform[y == i, 0], pca_transform[y == i, 1], color=color, alpha=.8, lw=lw,
+                        label=i)
+        plt.legend(loc='best', shadow=False, scatterpoints=1)
+        plt.title('PCA plot')
+        plt.show()
+
+
 
 def makeplot(data,y,ftr,kind, axes):
     target_names = pd.unique(y)
@@ -145,19 +178,20 @@ def makeplot(data,y,ftr,kind, axes):
         for ii in group:
             ii[ftr].dropna().value_counts().plot.bar(ax=axes[n])
             axes[n].set_xticklabels(["0","1"])
-            axes[n].set_title(target_names[n],fontdict=font1)
+            axes[n].set_title(target_names[n]+ " " + ftr,fontdict=font1)
             n+=1
-        plt.suptitle("{} for {} vs {}".format(ftr,target_names[0],target_names[1]),fontdict=font2)
-        plt.show()
+        #plt.suptitle("{} for {} vs {}".format(ftr,target_names[0],target_names[1]),fontdict=font2)
+        #plt.show()
     else:
         n = 0
         for ii in group:
-            ii.dropna(axis=0,subset=[ftr],how="any").boxplot(ftr,ax = axes[n])
-            axes[n].set_title("{}\n mean: {:10.3f}".format(target_names[n],ii[ftr].mean()),fontdict=font1)
+            ii.dropna(axis=0,subset=[ftr],how="any")[ftr].hist(ax = axes[n], normed = True,bins=int(1+4*np.log10(ii[ftr].shape[0])))
+            axes[n].set_title("{}\n median: {:10.3f}".format(target_names[n],ii[ftr].median()),fontdict=font1)
+            axes[n].set_xlabel(ftr)
             n+=1
-        t,p2 = ttest_ind(group[0][ftr],group[1][ftr],equal_var=False)
-        print("T-test on {} for {} vs {} p-val: {:10.3f}".format(
-            ftr,target_names[0],target_names[1],p2))
+        #t,p2 = ttest_ind(group[0][ftr],group[1][ftr],equal_var=False)
+        #print("T-test on {} for {} vs {} p-val: {:10.3f}".format(
+            #ftr,target_names[0],target_names[1],p2))
         #plt.suptitle("{} for {} vs {}\nT-test p-val: {:10.3f}".format(
             #ftr,target_names[0],target_names[1],p2),fontdict=font2)
         #plt.show()
