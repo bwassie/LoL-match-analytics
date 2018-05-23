@@ -1,6 +1,6 @@
 # League of Legends Match Analytics
 ![LoL logo](https://upload.wikimedia.org/wikipedia/en/7/77/League_of_Legends_logo.png)  
-This is a small analytics projects about one of my favorite eSports: League of Legends (LoL). The question I'm trying to answer in the context of professional League of Legends matches is: what are the differences between regions? In particular, what separates the LCK (Korea) from NA (North America). This is currently a work in progress but I plan to update it weekly, if not more frequently. The page [webscrape_tables.ipynb](https://github.com/bwassie/LoL-match-analytics/blob/master/webscrape_tables.ipynb) covers the data scraping portion while [2017_NA_vs_LCK_analysis.ipynb](https://github.com/bwassie/LoL-match-analytics/blob/master/2017_NA_vs_LCK_analysis.ipynb) covers some of the analysis. The folder `utils` contains the utilities I used to make some of the SQL querying and data processing easier. 
+This is a small analytics projects about one of my favorite eSports: League of Legends (LoL). I am trying to predict match outcomes from historical match data. The folder `utils` contains the utilities I used to make some of the SQL querying and data processing easier. 
 
 All of the data has been kindly provided by [Tim Sevenhuysen](https://twitter.com/TimSevenhuysen) on his website: [Oracle's Elixir](https://oracleselixir.com/). The images in this document and the overview below are all copied from this wikipedia aritlce about [League of Legends](https://en.wikipedia.org/wiki/League_of_Legends): 
 
