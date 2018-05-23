@@ -1,6 +1,6 @@
 # League of Legends Match Analytics
 ![LoL logo](https://upload.wikimedia.org/wikipedia/en/7/77/League_of_Legends_logo.png)  
-This is a small analytics projects about one of my favorite eSports: League of Legends (LoL). I am trying to predict match outcomes from historical match data. The folder `utils` contains the utilities I used to make some of the SQL querying and data processing easier. 
+This is a small analytics projects about one of my favorite eSports: League of Legends (LoL). I am trying to predict match outcomes from historical match data. The methodology and results can be found on my [blog](https://bwassie.wordpress.com/2018/05/21/league-of-legends-match-predictions/). The folder `utils` contains the utilities I used to make some of the SQL querying and data processing easier. 
 
 All of the data has been kindly provided by [Tim Sevenhuysen](https://twitter.com/TimSevenhuysen) on his website: [Oracle's Elixir](https://oracleselixir.com/). The images in this document and the overview below are all copied from this wikipedia aritlce about [League of Legends](https://en.wikipedia.org/wiki/League_of_Legends): 
 
